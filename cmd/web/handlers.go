@@ -43,14 +43,14 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NavError (w http.ResponseWriter, r *http.Request) {
+func navError (w http.ResponseWriter, r *http.Request) {
 _, err := w.Write([]byte("There's no page here, Madison."))
 if err != nil {
 log.Fatal("There was a problem with the NavError route", err)
 }
 }
 
-func ShowSnippet (w http.ResponseWriter, r *http.Request) {
+func showSnippet (w http.ResponseWriter, r *http.Request) {
 id, err := strconv.Atoi(r.URL.Query().Get("id"))
 if err != nil || id < 1 {
 http.NotFound(w, r)
@@ -62,7 +62,7 @@ log.Fatal("There was a problem with the ShowSnippet route", e)
 }
 }
 
-func CreateSnippet (w http.ResponseWriter, r *http.Request) {
+func createSnippet (w http.ResponseWriter, r *http.Request) {
 if r.Method != http.MethodPost {
 // If the method is not POST use the w.WriteHeader() method to send a 405
 // status code and the w.Write() method to write a "Method Not Allowed"
