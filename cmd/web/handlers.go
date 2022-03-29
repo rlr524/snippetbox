@@ -8,10 +8,10 @@ import (
 	"strconv"
 )
 
-// The home function is defined as a method against *Application (
+// The home function is defined as a method against *Application (a function receiver) (
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		app.notFound(w) // Use the notFound helper
 		return
 	}
 
@@ -29,8 +29,7 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 	// and use the http.Error() function to send a generic 500 Internal Server Error response to the user.
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.ErrorLog.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		app.serverError(w, err) // Use the serverError helper
 		return
 	}
 
@@ -39,8 +38,7 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 	// data that is passed in, which is currently nil.
 	err = ts.Execute(w, nil)
 	if err != nil {
-		app.ErrorLog.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		app.serverError(w, err) // Use the serverError helper
 	}
 }
 
@@ -54,7 +52,7 @@ func navError(w http.ResponseWriter, r *http.Request) {
 func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.notFound(w) // Use the notFound helper
 		return
 	}
 	_, e := fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
@@ -84,13 +82,13 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		// Can combine the WriteHeader() and Write() into using the http.Error() method
 		// which takes the ResponseWriter, an error message string, and the http code to be returned
 		// We can avoid having to do error handling on the Write() method using this method
-		http.Error(w, "Method not allowed", 405)
+		app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError helper
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Add("Cache-Control", "public")
-	_, err := w.Write([]byte(`{"name":"Madison"}`))
+	_, err := w.Write([]byte("Create a new snippet..."))
 	if err != nil {
-		http.Error(w, "There was a problem with the CreateSnippet route", 400)
+		app.clientError(w, http.StatusBadRequest)
 	}
 }
