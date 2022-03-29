@@ -13,6 +13,11 @@ type Config struct {
 	StaticDir string
 }
 
+type Application struct {
+	ErrorLog *log.Logger
+	InfoLog  *log.Logger
+}
+
 func main() {
 	// Define command line flags for the port and static directory and parse them.
 	cfg := new(Config)
@@ -27,12 +32,18 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO:\t", log.Ldate|log.Ltime)
 	// Create a logger for writing error messages in the same way, but use stderr as the destination and use the
 	// log.Llongfile flag to include the relevant path, file name and line number
-	errorLog := log.New(os.Stderr, "ERR:\t", log.Ldate|log.Ltime|log.Llongfile)
+	errorLog := log.New(os.Stderr, "ERROR:\t", log.Ldate|log.Ltime|log.Llongfile)
+
+	// Initialize an instance of Application containing logging dependencies
+	app := &Application{
+		ErrorLog: errorLog,
+		InfoLog:  infoLog,
+	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", Home)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet", app.showSnippet)
+	mux.HandleFunc("/snippet/create", app.createSnippet)
 	// Create a file server which serves files out of the "./ui/static" directory. Note that
 	// the path given to the http.Dir function is relative to the project directory root.
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir(cfg.StaticDir)})
