@@ -13,3 +13,6 @@ log.Llongfile flag to include the relevant path, file name and line number.
 ##srv
 > Initialize a new http.Server struct. Set the Addr and Handler fields so that 
 the server uses the same network address as in the Config struct and the routes and set the ErrorLog field so that the server uses the custom errorLog logger in the event of any problems.
+
+##openDB
+> Wraps sql.Open() and returns a sql.DB connection pool for a given DSN
