@@ -61,33 +61,30 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// createSnippet function creates a new snippet #docs.md: createSnippet
 func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		// If the method is not POST use the w.WriteHeader() method to send a 405
-		// status code and the w.Write() method to write a "Method Not Allowed"
-		// response body. We then return from the function so that the
-		// subsequent code is not executed
-		// Use the Header().Set() method to provide additional information to the user
-		// by setting a header as Allow:POST
-		// Need to ensure headers are set BEFORE WriteHeader() or Write() are called
-		// Remember the difference between WriteHeader() and Header().Set() is that
-		// WriteHeader() only sets a status code and that can't be changed once set or set again
-		// where Header().Set() sends the headers in the standard key:value format
 		w.Header().Set("Allow", http.MethodPost)
-		//w.WriteHeader(405)
-		//_, err := w.Write([]byte("Method not allowed \n"))
-		//if err != nil {
-		//	return
-		//}
-		// Can combine the WriteHeader() and Write() into using the http.Error() method
-		// which takes the ResponseWriter, an error message string, and the http code to be returned
-		// We can avoid having to do error handling on the Write() method using this method
 		app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError helper
 		return
 	}
+	// Dummy data for db
+	title := "O snail"
+	content := "O snail\nClimb Mount Fuji,\nslowly!\n\n-Kobayashi Issa"
+	expires := "7"
+
+	// Pass the data to the SnippetModel.Insert() method, receiving the ID of the new record back.
+	id, err := app.Snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Add("Cache-Control", "public")
-	_, err := w.Write([]byte("Create a new snippet..."))
+	_, err = w.Write([]byte("Create a new snippet..."))
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 	}
