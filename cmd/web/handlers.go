@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/rlr524/snippetbox/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -55,6 +57,22 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w) // Use the notFound helper
 		return
 	}
+
+	// Use the SnippetModel object's Get method to retrieve the data for a specific record based
+	// on its ID. If no matching record is found, return a 404 Not Found response.
+	s, err := app.SnippetsModel.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Write the snippet data as a plain-text HTTP response body.
+	fmt.Fprintf(w, "%v", s)
+
 	_, e := fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 	if e != nil {
 		log.Fatal("There was a problem with the ShowSnippet route", e)
@@ -74,7 +92,7 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	expires := "7"
 
 	// Pass the data to the SnippetModel.Insert() method, receiving the ID of the new record back.
-	id, err := app.Snippets.Insert(title, content, expires)
+	id, err := app.SnippetsModel.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, err)
 		return

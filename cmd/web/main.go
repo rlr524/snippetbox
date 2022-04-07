@@ -14,9 +14,9 @@ import (
 )
 
 type Application struct {
-	ErrorLog *log.Logger
-	InfoLog  *log.Logger
-	Snippets *mysql.SnippetModel
+	ErrorLog      *log.Logger
+	InfoLog       *log.Logger
+	SnippetsModel *mysql.SnippetModel
 }
 
 func main() {
@@ -43,9 +43,9 @@ func main() {
 
 	// Initialize an instance of Application containing logging dependencies
 	app := &Application{
-		ErrorLog: errorLog,
-		InfoLog:  infoLog,
-		Snippets: &mysql.SnippetModel{DB: db},
+		ErrorLog:      errorLog,
+		InfoLog:       infoLog,
+		SnippetsModel: &mysql.SnippetModel{DB: db},
 	}
 
 	srv := &http.Server{
