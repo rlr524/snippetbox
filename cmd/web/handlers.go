@@ -3,11 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/rlr524/snippetbox/pkg/models"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/rlr524/snippetbox/pkg/models"
 )
 
 // The home function is defined as a method against *Application (a function receiver) (
@@ -17,31 +17,41 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Initialize a slice containing the paths of the two files. Note that the
-	// home.page.gohtml file must be the first file in the slice.
-	files := []string{
-		"./ui/html/home.page.gohtml",
-		"./ui/html/base.layout.gohtml",
-		"./ui/html/footer.partial.gohtml",
-	}
-
-	// Use the template.ParseFiles() function to read the files and store the templates in a
-	// template set. Note the ... here works very much like the spread operator in JavaScript as it
-	// unpacks the contents of the slice. If there is an error, log the detailed error message
-	// and use the http.Error() function to send a generic 500 Internal Server Error response to the user.
-	ts, err := template.ParseFiles(files...)
+	s, err := app.SnippetsModel.Latest()
 	if err != nil {
-		app.serverError(w, err) // Use the serverError helper
+		app.serverError(w, err)
 		return
 	}
 
-	// Then use the Execute() method from the html/template library on the template set to write the
-	// template content as the response body. The last parameter to Execute() represents any dynamic
-	// data that is passed in, which is currently nil.
-	err = ts.Execute(w, nil)
-	if err != nil {
-		app.serverError(w, err) // Use the serverError helper
+	for _, snippet := range s {
+		fmt.Fprintf(w, "%v,\n", snippet)
 	}
+
+	//// Initialize a slice containing the paths of the two files. Note that the
+	//// home.page.gohtml file must be the first file in the slice.
+	//files := []string{
+	//	"./ui/html/home.page.gohtml",
+	//	"./ui/html/base.layout.gohtml",
+	//	"./ui/html/footer.partial.gohtml",
+	//}
+	//
+	//// Use the template.ParseFiles() function to read the files and store the templates in a
+	//// template set. Note the ... here works very much like the spread operator in JavaScript as it
+	//// unpacks the contents of the slice. If there is an error, log the detailed error message
+	//// and use the http.Error() function to send a generic 500 Internal Server Error response to the user.
+	//ts, err := template.ParseFiles(files...)
+	//if err != nil {
+	//	app.serverError(w, err) // Use the serverError helper
+	//	return
+	//}
+	//
+	//// Then use the Execute() method from the html/template library on the template set to write the
+	//// template content as the response body. The last parameter to Execute() represents any dynamic
+	//// data that is passed in, which is currently nil.
+	//err = ts.Execute(w, nil)
+	//if err != nil {
+	//	app.serverError(w, err) // Use the serverError helper
+	//}
 }
 
 func navError(w http.ResponseWriter, r *http.Request) {

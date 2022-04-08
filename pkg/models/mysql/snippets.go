@@ -47,7 +47,7 @@ WHERE expires > UTC_TIMESTAMP() AND id = ?`
 	// Use row.Scan() to copy the values from each field in sql.Row to the corresponding field in the Snippet
 	// struct. Notice that the arguments to row.Scan are &pointers to the place we want to copy the data into, and
 	// the number of arguments must be exactly the same as the number of columns returned by the statement.
-	err := row.Scan(&s.ID, &s.Content, &s.Content, &s.Created, &s.Expires)
+	err := row.Scan(&s.ID, &s.Content, &s.Title, &s.Created, &s.Expires)
 	if err != nil {
 		// If the query returns no rows, then row.Scan() will return a sql.ErrNoRows error. We use the errors.Is()
 		// function to check for that error specifically, and return our own models.ErrNoRecord instead
@@ -63,5 +63,30 @@ WHERE expires > UTC_TIMESTAMP() AND id = ?`
 
 // Latest function returns the 10 most recently created snippets
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
-	return nil, nil
+	stmt := `SELECT id, title, content, created, expires FROM snippets
+WHERE expires > UTC_TIMESTAMP() ORDER BY created DESC limit 10`
+
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	snippets := []*models.Snippet{}
+
+	for rows.Next() {
+		s := &models.Snippet{}
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+		snippets = append(snippets, s)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return snippets, nil
 }
