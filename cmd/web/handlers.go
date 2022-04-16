@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -80,12 +81,27 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Write the snippet data as a plain-text HTTP response body.
-	fmt.Fprintf(w, "%v", s)
+	// Create an instance of a templateData struct holding the snippet data
+	data := &templateData{Snippet: s}
 
-	_, e := fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
-	if e != nil {
-		log.Fatal("There was a problem with the ShowSnippet route", e)
+	// Init a slice containing the paths to the show.page.gohtml file, plus the base layout and footer partial
+	files := []string{
+		"./ui/html/show.page.gohtml",
+		"./ui/html/base.layout.gohtml",
+		"./ui/html/footer.partial.gohtml",
+	}
+
+	// Parse the template files; pass in a spread operator to ParseFiles to iterate over the whole files slice
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Execute the template files. Note that snippet data (models.Snippet struct s) is passed as the final parameter
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
 	}
 }
 
