@@ -16,7 +16,7 @@ import (
 type Application struct {
 	ErrorLog      *log.Logger
 	InfoLog       *log.Logger
-	SnippetsModel *mysql.SnippetModel
+	SnippetsModel *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
 }
 
 func main() {

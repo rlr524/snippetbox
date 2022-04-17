@@ -24,35 +24,27 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range s {
-		fmt.Fprintf(w, "%v,\n", snippet)
+	// Create an instance of a templateData struct holding the slice of snippets
+	data := &templateData{Snippets: s}
+
+	// Init a slice containing the paths to the show.page.gohtml file, plus the base layout and footer partial.
+	// Note this files slice is different from the one used in the showSnippet handler.
+	var files = []string{
+		"./ui/html/home.page.gohtml",
+		"./ui/html/base.layout.gohtml",
+		"./ui/html/footer.partial.gohtml",
 	}
 
-	//// Initialize a slice containing the paths of the two files. Note that the
-	//// home.page.gohtml file must be the first file in the slice.
-	//files := []string{
-	//	"./ui/html/home.page.gohtml",
-	//	"./ui/html/base.layout.gohtml",
-	//	"./ui/html/footer.partial.gohtml",
-	//}
-	//
-	//// Use the template.ParseFiles() function to read the files and store the templates in a
-	//// template set. Note the ... here works very much like the spread operator in JavaScript as it
-	//// unpacks the contents of the slice. If there is an error, log the detailed error message
-	//// and use the http.Error() function to send a generic 500 Internal Server Error response to the user.
-	//ts, err := template.ParseFiles(files...)
-	//if err != nil {
-	//	app.serverError(w, err) // Use the serverError helper
-	//	return
-	//}
-	//
-	//// Then use the Execute() method from the html/template library on the template set to write the
-	//// template content as the response body. The last parameter to Execute() represents any dynamic
-	//// data that is passed in, which is currently nil.
-	//err = ts.Execute(w, nil)
-	//if err != nil {
-	//	app.serverError(w, err) // Use the serverError helper
-	//}
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+	}
 }
 
 func navError(w http.ResponseWriter, r *http.Request) {
@@ -84,8 +76,8 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	// Create an instance of a templateData struct holding the snippet data
 	data := &templateData{Snippet: s}
 
-	// Init a slice containing the paths to the show.page.gohtml file, plus the base layout and footer partial
-	files := []string{
+	// Init a slice containing the paths to the show.page.gohtml file, plus the base layout and footer partial.
+	var files = []string{
 		"./ui/html/show.page.gohtml",
 		"./ui/html/base.layout.gohtml",
 		"./ui/html/footer.partial.gohtml",
