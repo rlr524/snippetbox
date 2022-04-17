@@ -6,6 +6,21 @@ import (
 	"runtime/debug"
 )
 
+func (app *Application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+	// Retrieve the appropriate template set from the cache based on the page name. If no entry exists
+	// in the cache with the provided name, call the serverError helper method.
+	ts, ok := app.templateCache[name]
+	if !ok {
+		app.serverError(w, fmt.Errorf("The template %s does not exist", name))
+		return
+	}
+	// Execute the template set, passing in any dynamic data
+	err := ts.Execute(w, td)
+	if err != nil {
+		app.serverError(w, err)
+	}
+}
+
 // The serverError helper writes an error message and stack trace to the errorLog, then sends
 // a generic 500 Internal Server Error response to the server
 func (app *Application) serverError(w http.ResponseWriter, err error) {

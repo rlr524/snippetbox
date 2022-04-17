@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -24,34 +22,10 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create an instance of a templateData struct holding the slice of snippets
-	data := &templateData{Snippets: s}
-
-	// Init a slice containing the paths to the show.page.gohtml file, plus the base layout and footer partial.
-	// Note this files slice is different from the one used in the showSnippet handler.
-	var files = []string{
-		"./ui/html/home.page.gohtml",
-		"./ui/html/base.layout.gohtml",
-		"./ui/html/footer.partial.gohtml",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
-}
-
-func navError(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("There's no page here, Madison."))
-	if err != nil {
-		log.Fatal("There was a problem with the NavError route", err)
-	}
+	// Use the render helper.
+	app.render(w, r, "home.page.gohtml", &templateData{
+		Snippets: s,
+	})
 }
 
 func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -73,28 +47,10 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create an instance of a templateData struct holding the snippet data
-	data := &templateData{Snippet: s}
-
-	// Init a slice containing the paths to the show.page.gohtml file, plus the base layout and footer partial.
-	var files = []string{
-		"./ui/html/show.page.gohtml",
-		"./ui/html/base.layout.gohtml",
-		"./ui/html/footer.partial.gohtml",
-	}
-
-	// Parse the template files; pass in a spread operator to ParseFiles to iterate over the whole files slice
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// Execute the template files. Note that snippet data (models.Snippet struct s) is passed as the final parameter
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	// Use the render helper.
+	app.render(w, r, "show.page.gohtml", &templateData{
+		Snippet: s,
+	})
 }
 
 // createSnippet function creates a new snippet #docs.md: createSnippet

@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,7 @@ type Application struct {
 	ErrorLog      *log.Logger
 	InfoLog       *log.Logger
 	SnippetsModel *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -41,11 +43,18 @@ func main() {
 		}
 	}(db)
 
-	// Initialize an instance of Application containing logging dependencies
+	// Initialize a new template cache.
+	templateCache, err := newTemplateCache("./ui/html/")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	// Initialize an instance of Application containing logging dependencies, models and cache
 	app := &Application{
 		ErrorLog:      errorLog,
 		InfoLog:       infoLog,
 		SnippetsModel: &mysql.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
