@@ -16,7 +16,7 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := app.SnippetsModel.Latest()
+	s, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -37,7 +37,7 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	// Use the SnippetModel object's Get method to retrieve the data for a specific record based
 	// on its ID. If no matching record is found, return a 404 Not Found response.
-	s, err := app.SnippetsModel.Get(id)
+	s, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
@@ -66,7 +66,7 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	expires := "7"
 
 	// Pass the data to the SnippetModel.Insert() method, receiving the ID of the new record back.
-	id, err := app.SnippetsModel.Insert(title, content, expires)
+	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, err)
 		return

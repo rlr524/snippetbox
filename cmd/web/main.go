@@ -3,21 +3,20 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"github.com/rlr524/snippetbox/pkg/models/mysql"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 
-	"github.com/rlr524/snippetbox/pkg/models/mysql"
-
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type Application struct {
-	ErrorLog      *log.Logger
-	InfoLog       *log.Logger
-	SnippetsModel *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
 	templateCache map[string]*template.Template
 }
 
@@ -51,9 +50,9 @@ func main() {
 
 	// Initialize an instance of Application containing logging dependencies, models and cache
 	app := &Application{
-		ErrorLog:      errorLog,
-		InfoLog:       infoLog,
-		SnippetsModel: &mysql.SnippetModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &mysql.SnippetModel{DB: db},
 		templateCache: templateCache,
 	}
 

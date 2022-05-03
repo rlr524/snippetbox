@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -11,21 +12,29 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, name stri
 	// in the cache with the provided name, call the serverError helper method.
 	ts, ok := app.templateCache[name]
 	if !ok {
-		app.serverError(w, fmt.Errorf("The template %s does not exist", name))
+		app.serverError(w, fmt.Errorf("the template %s does not exist", name))
 		return
 	}
-	// Execute the template set, passing in any dynamic data
-	err := ts.Execute(w, td)
+	// Initialize a new buffer
+	buf := new(bytes.Buffer)
+
+	// Execute the template set by writing it to the buffer, passing in any dynamic data.
+	// If there is an error, call serverError (500 error)
+	err := ts.Execute(buf, td)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	// Otherwise, writing the contents of the buffer to the http.ResponseWriter
+	buf.WriteTo(w)
 }
 
 // The serverError helper writes an error message and stack trace to the errorLog, then sends
 // a generic 500 Internal Server Error response to the server
 func (app *Application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.ErrorLog.Output(2, trace)
+	app.errorLog.Output(2, trace)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 

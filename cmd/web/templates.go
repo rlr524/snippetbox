@@ -38,13 +38,13 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		}
 
 		// Use the ParseGlob method to add any "layout" templates to the template set.
-		ts, err = template.ParseGlob(filepath.Join(dir, "*.layout.gohtml"))
+		_, err = ts.ParseGlob(filepath.Join(dir, "*.layout.gohtml"))
 		if err != nil {
 			return nil, err
 		}
 
 		// Use the ParseGlob method to add any "partial templates to the template set.
-		ts, err = template.ParseGlob(filepath.Join(dir, "*.partial.gohtml"))
+		_, err = ts.ParseGlob(filepath.Join(dir, "*.partial.gohtml"))
 		if err != nil {
 			return nil, err
 		}
