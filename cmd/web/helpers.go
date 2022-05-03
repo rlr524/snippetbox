@@ -5,8 +5,20 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
+// The addDefaultData helper is used in the render helper to add any default data to all pages. It takes in a
+// pointer to the templateData struct, adds any global dynamic data, and returns the pointer.
+func (app *Application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+	td.CurrentYear = time.Now().Year()
+	return td
+}
+
+// The render helper handles all rendering of html templates
 func (app *Application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
 	// Retrieve the appropriate template set from the cache based on the page name. If no entry exists
 	// in the cache with the provided name, call the serverError helper method.
@@ -18,9 +30,9 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, name stri
 	// Initialize a new buffer
 	buf := new(bytes.Buffer)
 
-	// Execute the template set by writing it to the buffer, passing in any dynamic data.
+	// Execute the template set by writing it to the buffer, passing in any dynamic data including default / global data.
 	// If there is an error, call serverError (500 error)
-	err := ts.Execute(buf, td)
+	err := ts.Execute(buf, app.addDefaultData(td, r))
 	if err != nil {
 		app.serverError(w, err)
 		return

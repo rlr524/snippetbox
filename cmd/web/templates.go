@@ -11,8 +11,9 @@ import (
 // via the Applications struct defined in main.go. Because of this, the model is referenced using the actual
 // model name, Snippet, not the alias it's assigned in the Application struct, which is SnippetsModel.
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
