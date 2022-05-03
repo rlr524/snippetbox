@@ -4,6 +4,7 @@ import (
 	"github.com/rlr524/snippetbox/pkg/models"
 	"html/template"
 	"path/filepath"
+	"time"
 )
 
 // Define a templateData type to act as the holding structure for any dynamic data that is passed to
@@ -14,6 +15,18 @@ type templateData struct {
 	CurrentYear int
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
+}
+
+// The humanDate function converts ISO 8601 time format to a more human-readable form. See the documentation
+// for the time package for acceptable string formats. A custom template function like this is variadic, it can
+// take in as many parameters as needed, but it can only return one value (and an error as needed).
+func humanDate(t time.Time) string {
+	return t.Format("January 02, 2006 at 15:04")
+}
+
+// The function map object acts as a lookup between the names of custom template functions and the functions themselves
+var functions = template.FuncMap{
+	"humanDate": humanDate,
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
@@ -32,8 +45,10 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		// Extract the file name (e.g. "home.page.gohtml") from the full file path and assign it to the name variable.
 		name := filepath.Base(page)
 
-		// Parse the page template file in to a template set.
-		ts, err := template.ParseFiles(page)
+		// Parse the page template file in to a template set. In doing this, also register the function map by creating
+		// an empty template set with template.New(), using the Funcs() method to register the function map
+		// and then parsing the file. These methods can be chained together as here.
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}

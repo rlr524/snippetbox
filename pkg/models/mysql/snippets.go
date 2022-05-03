@@ -47,7 +47,9 @@ WHERE expires > UTC_TIMESTAMP() AND id = ?`
 	// Use row.Scan() to copy the values from each field in sql.Row to the corresponding field in the Snippet
 	// struct. Notice that the arguments to row.Scan are &pointers to the place we want to copy the data into, and
 	// the number of arguments must be exactly the same as the number of columns returned by the statement.
-	err := row.Scan(&s.ID, &s.Content, &s.Title, &s.Created, &s.Expires)
+	// The must also EXACTLY MATCH the order of the fields in the model and the order in which the fields are
+	// returned in the statement or the data will be populated into the wrong field when displayed.
+	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
 	if err != nil {
 		// If the query returns no rows, then row.Scan() will return a sql.ErrNoRows error. We use the errors.Is()
 		// function to check for that error specifically, and return our own models.ErrNoRecord instead
