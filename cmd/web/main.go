@@ -68,6 +68,7 @@ func main() {
 	errorLog.Fatal(err)
 }
 
+// The openDB function returns a pool of connections for the MySQL DB
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
