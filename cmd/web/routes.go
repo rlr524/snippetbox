@@ -16,7 +16,8 @@ func (app *Application) routes() http.Handler {
 	mux.Handle("/static", http.NotFoundHandler())
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	// Pass the servemux as the "next" parameter to the secureHeaders middleware. Because secureHeaders is just a
-	// function, and the function returns a http.Handler, there is nothing else to do.
-	return secureHeaders(mux)
+	// Wrap the return statement in the recoverPanic and logRequest middleware, then pass the servemux as
+	// the "next" parameter to the secureHeaders middleware. Because secureHeaders is just a function, and
+	// the function returns a http.Handler, there is nothing else to do.
+	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
 }
