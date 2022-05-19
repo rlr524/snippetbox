@@ -1,8 +1,14 @@
 package main
 
-import "net/http"
+import (
+	"github.com/justinas/alice"
+	"net/http"
+)
 
 func (app *Application) routes() http.Handler {
+	// Use the alice package for middleware chain with the standard middleware used for every request
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/snippet", app.showSnippet)
@@ -19,5 +25,5 @@ func (app *Application) routes() http.Handler {
 	// Wrap the return statement in the recoverPanic and logRequest middleware, then pass the servemux as
 	// the "next" parameter to the secureHeaders middleware. Because secureHeaders is just a function, and
 	// the function returns a http.Handler, there is nothing else to do.
-	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
+	return standardMiddleware.Then(mux)
 }
