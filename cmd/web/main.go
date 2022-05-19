@@ -23,8 +23,9 @@ type Application struct {
 func main() {
 	// Command line flag for the port
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	// Command line flag for the MySQL DSN
-	dsn := flag.String("dsn", "web:yukiorun!@/snippetbox?parseTime=true", "MySQL data source name")
+	// Command line flag for the MySQL DSN currently located on local Docker container
+	// TODO: Encrypt the password and move it to an env var
+	dsn := flag.String("dsn", "web:Ailing2003Gold@2022@tcp(127.0.0.1:3307)/snippetbox?parseTime=true", "MySQL data source name")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO:\t", log.Ldate|log.Ltime)
