@@ -1,0 +1,23 @@
+{{ template "base" .}}
+
+{{ define "title"}}Create a New Snippet{{ end }}
+
+{{ define "main" }}
+<form action="/snippet/create" method="post">
+    <div>
+        <label>Title:</label>
+        <input type="text" name="title" aria-label="title">
+    </div>
+    <div>
+        <label>Content:</label>
+        <textarea name="content" aria-label="content"></textarea>
+    </div>
+    <input>
+        <label>Delete in:</label>
+        <input type="radio" name="expires" aria-label="expires in one year" value="365" checked> One Year
+        <input type="radio" name="expires" aria-label="expires in one week" value="7"> One Week
+        <input type="radio" name="expires" aria-label="expires in one day" value="1"> One Day
+        <input type="submit" value="Publish snippet" aria-label="Publish snippet button">
+    </div>
+</form>
+{{ end }}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
@@ -31,7 +30,7 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id < 1 {
 		app.notFound(w) // Use the notFound helper
 		return
@@ -55,16 +54,9 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (app *Application) snippetCtx(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "id", chi.URLParam(r, "id"))
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
 // createSnippetForm function is a handler for presenting to form used to create a new snippet
 func (app *Application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Create a new snippet..."))
+	app.render(w, r, "create.page.gohtml", nil)
 }
 
 // createSnippet function creates a new snippet #docs.md: createSnippet

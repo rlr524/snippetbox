@@ -12,15 +12,11 @@ func (app *Application) routes() http.Handler {
 
 	r := chi.NewRouter()
 
-	r.Get("/", http.HandlerFunc(app.home))
+	r.Get("/", app.home)
 	r.Route("/snippet", func(r chi.Router) {
-		r.Get("/create", http.HandlerFunc(app.createSnippetForm))
-		r.Post("/create", http.HandlerFunc(app.createSnippet))
-
-		r.Route("/{id}", func(r chi.Router) {
-			r.Use(app.snippetCtx)
-			r.Get("/", app.showSnippet)
-		})
+		r.Get("/create", app.createSnippetForm)
+		r.Post("/create", app.createSnippet)
+		r.Get("/{id:[0-9]+}", app.showSnippet)
 	})
 
 	// Create a file server which serves files out of the "./ui/static" directory. Note that
