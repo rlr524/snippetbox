@@ -61,12 +61,20 @@ func (app *Application) createSnippetForm(w http.ResponseWriter, r *http.Request
 
 // createSnippet function creates a new snippet #docs.md: createSnippet
 func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
-	// Dummy data for db
-	title := "O snail"
-	content := "O snail\nClimb Mount Fuji,\nslowly!\n\n-Kobayashi Issa"
-	expires := "7"
+	// Call r.ParseForm which adds any data in POST request bodies to the r.PostForm map. This also works in the
+	// same way for PUT and PATCH requests. If there are any errors, us the app.ClientError helper to send a 400.
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
-	// Pass the data to the SnippetModel.Insert() method, receiving the ID of the new record back.
+	// Use the r.PostForm.Get() method tp retrieve the relevant data fields from the r.PostForm map.
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+	expires := r.PostForm.Get("expires")
+
+	// Create a new snippet in the db using the form data
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, err)
