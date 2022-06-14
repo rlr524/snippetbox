@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/rlr524/snippetbox/pkg/models"
 	"html/template"
+	"net/url"
 	"path/filepath"
 	"time"
 )
@@ -13,6 +14,8 @@ import (
 // model name, Snippet, not the alias it's assigned in the Application struct, which is SnippetsModel.
 type templateData struct {
 	CurrentYear int
+	FormData    url.Values
+	FormErrors  map[string]string
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 }
