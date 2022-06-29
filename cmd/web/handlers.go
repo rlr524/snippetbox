@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/rlr524/snippetbox/pkg/forms"
+	"github.com/rlr524/snippetbox/pkg/models"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
-
-	"github.com/rlr524/snippetbox/pkg/models"
 )
 
 // The home function is defined as a method against *Application (a function receiver) (
@@ -58,7 +56,9 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 // createSnippetForm function is a handler for presenting to form used to create a new snippet
 func (app *Application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.gohtml", nil)
+	app.render(w, r, "create.page.gohtml", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 // createSnippet function creates a new snippet #docs.md: createSnippet
@@ -71,53 +71,75 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the r.PostForm.Get() method tp retrieve the relevant data fields from the r.PostForm map.
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
+	// The forms.Form struct contains the POSTed data from the form, then uses the validation methods to check content.
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	// Hold any validation errors
-	errorsMap := make(map[string]string)
+	// If the form isn't valid, redisplay the template passing in the form.Form object as the data.
+	if !form.Valid() {
+		app.render(w, r, "create.page.gohtml", &templateData{
+			Form: form,
+		})
+		return
+	}
+
+	// Because the form data (with type url.Values) has been anonymously embedded in the form.Form struct,
+	// use the Get() method to retrieve the validated value for a particular form field.
+	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	//// Use the r.PostForm.Get() method tp retrieve the relevant data fields from the r.PostForm map.
+	//title := r.PostForm.Get("title")
+	//content := r.PostForm.Get("content")
+	//expires := r.PostForm.Get("expires")
+	//
+	//// Hold any validation errors
+	//errorsMap := make(map[string]string)
 
 	// Check that the title field is not blank and is under 100 char. If it fails either check, add a message
 	// to the errors map using the field name as the key. Using the RuneCountInString method here because we
 	// want to count the characters in the string, not the number of bytes, which is what we'd get if we used
 	// the len() function on a string. See https://go.dev/play/p/DETcUgcQgv3 for a Go playground that
 	// demonstrates the difference between len() and RuneCountInString().
-	if strings.TrimSpace(title) == "" {
-		errorsMap["title"] = "The title field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		errorsMap["title"] = "The title field is too long (maximum is 100 characters)"
-	}
-
-	// Check that the content field isn't blank
-	if strings.TrimSpace(content) == "" {
-		errorsMap["content"] = "The content field cannot be blank"
-	}
-
-	// Check that the expires field isn't blank and matches one of the permitted values ("1", "7" or "365)
-	if strings.TrimSpace(expires) == "" {
-		errorsMap["expires"] = "The expires field cannot be blank"
-	} else if expires != "365" && expires != "7" && expires != "1" {
-		errorsMap["expires"] = "The expires field contains an invalid value, it must be 1, 7 or 365"
-	}
-
-	// If there are any validation errors, redisplay the create.page.gohtml template, passing in the
-	// validation errors and the previously submitted r.PostForm data.
-	if len(errorsMap) > 0 {
-		app.render(w, r, "create.page.gohtml", &templateData{
-			FormErrors: errorsMap,
-			FormData:   r.PostForm,
-		})
-		return
-	}
-
-	// Create a new snippet in the db using the form data
-	id, err := app.snippets.Insert(title, content, expires)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	//if strings.TrimSpace(title) == "" {
+	//	errorsMap["title"] = "The title field cannot be blank"
+	//} else if utf8.RuneCountInString(title) > 100 {
+	//	errorsMap["title"] = "The title field is too long (maximum is 100 characters)"
+	//}
+	//
+	//// Check that the content field isn't blank
+	//if strings.TrimSpace(content) == "" {
+	//	errorsMap["content"] = "The content field cannot be blank"
+	//}
+	//
+	//// Check that the expires field isn't blank and matches one of the permitted values ("1", "7" or "365)
+	//if strings.TrimSpace(expires) == "" {
+	//	errorsMap["expires"] = "The expires field cannot be blank"
+	//} else if expires != "365" && expires != "7" && expires != "1" {
+	//	errorsMap["expires"] = "The expires field contains an invalid value, it must be 1, 7 or 365"
+	//}
+	//
+	//// If there are any validation errors, redisplay the create.page.gohtml template, passing in the
+	//// validation errors and the previously submitted r.PostForm data.
+	//if len(errorsMap) > 0 {
+	//	app.render(w, r, "create.page.gohtml", &templateData{
+	//		FormErrors: errorsMap,
+	//		FormData:   r.PostForm,
+	//	})
+	//	return
+	//}
+	//
+	//// Create a new snippet in the db using the form data
+	//id, err := app.snippets.Insert(title, content, expires)
+	//if err != nil {
+	//	app.serverError(w, err)
+	//	return
+	//}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 
