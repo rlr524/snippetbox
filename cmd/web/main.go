@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/rlr524/snippetbox/pkg/models/mysql"
 	"html/template"
 	"log"
@@ -21,11 +23,17 @@ type Application struct {
 }
 
 func main() {
+	os.Setenv("environment", "development")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	dbPass := os.Getenv("DB_PASS")
 	// Command line flag for the port
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	// Command line flag for the MySQL DSN currently located on local Docker container
-	// TODO: Encrypt the password and move it to an env var
-	dsn := flag.String("dsn", "web:Ailing2003$Gold@tcp(127.0.0.1:3306)/snippetbox?parseTime=true", "MySQL data source name")
+	// TODO: Encrypt the password
+	dsn := flag.String("dsn", fmt.Sprintf("web:%s@tcp(127.0.0.1:3306)/snippetbox?parseTime=true", dbPass), "MySQL data source name")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO:\t", log.Ldate|log.Ltime)
