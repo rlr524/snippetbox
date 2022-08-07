@@ -15,10 +15,7 @@
     <header>
         <h1><a href="/">Snippetbox</a></h1>
     </header>
-<nav>
-    <a href="/">Home</a>
-    <a href="/snippet/create">Create a snippet</a>
-</nav>
+{{ template "nav" .}}
 <main>{{template "main" .}}</main>
 {{template "footer" .}}
 <script src="../static/js/main.js" type="text/javascript"></script>

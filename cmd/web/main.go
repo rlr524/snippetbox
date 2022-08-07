@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/golangcollege/sessions"
 	"github.com/joho/godotenv"
 	"github.com/rlr524/snippetbox/pkg/models/mysql"
 	"html/template"
@@ -11,29 +13,32 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-
-	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 type Application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
+	session       *sessions.Session
 	snippets      *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
 	templateCache map[string]*template.Template
 }
 
 func main() {
-	os.Setenv("environment", "development")
+	_ = os.Setenv("environment", "development")
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 	dbPass := os.Getenv("DB_PASS")
+	sessionSecret := os.Getenv("SESSION_SECRET")
 	// Command line flag for the port
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	// Command line flag for the MySQL DSN currently located on local Docker container
 	// TODO: Encrypt the password
-	dsn := flag.String("dsn", fmt.Sprintf("web:%s@tcp(127.0.0.1:3306)/snippetbox?parseTime=true", dbPass), "MySQL data source name")
+	dsn := flag.String("dsn", fmt.Sprintf("web:%s@tcp(127.0.0.1:3306)/snippetbox?parseTime=true", dbPass),
+		"MySQL data source name")
+	secret := flag.String("secret", sessionSecret, "Secret key")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO:\t", log.Ldate|log.Ltime)
@@ -57,10 +62,14 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	session := sessions.New([]byte(*secret))
+	session.Lifetime = 12 * time.Hour
+
 	// Initialize an instance of Application containing logging dependencies, models and cache
 	app := &Application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
+		session:       session,
 		snippets:      &mysql.SnippetModel{DB: db},
 		templateCache: templateCache,
 	}

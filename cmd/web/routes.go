@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-chi/chi/v5"
+	"github.com/bmizerany/pat"
 	"github.com/justinas/alice"
 	"net/http"
 )
@@ -9,27 +9,22 @@ import (
 func (app *Application) routes() http.Handler {
 	// Use the alice package for middleware chain with the standard middleware used for every request
 	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+	dynamicMiddleware := alice.New(app.session.Enable)
 
-	r := chi.NewRouter()
+	mux := pat.New()
 
-	r.Get("/", app.home)
-	r.Route("/snippet", func(r chi.Router) {
-		r.Get("/create", app.createSnippetForm)
-		r.Post("/create", app.createSnippet)
-		r.Get("/{id:[0-9]+}", app.showSnippet)
-	})
+	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
+	mux.Get("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippetForm))
+	mux.Post("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippet))
+	mux.Get("/snippet/:id", dynamicMiddleware.ThenFunc(app.showSnippet))
 
 	// Create a file server which serves files out of the "./ui/static" directory. Note that
 	// the path given to the http.Dir function is relative to the project directory root.
-	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static")})
-	// Use the mux.Handle() function to register the file server as the handler for all URL paths
-	// that start with "/static/". For matching paths, strip out the "/static" prefix
-	// before the request reaches the file server.
-	r.Handle("/static", http.NotFoundHandler())
-	r.Handle("/static/*", http.StripPrefix("/static", fileServer))
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	mux.Get("/static", http.StripPrefix("/static", fileServer))
 
 	// Wrap the return statement in the recoverPanic and logRequest middleware, then pass the servemux as
 	// the "next" parameter to the secureHeaders middleware. Because secureHeaders is just a function, and
 	// the function returns a http.Handler, there is nothing else to do.
-	return standardMiddleware.Then(r)
+	return standardMiddleware.Then(mux)
 }
