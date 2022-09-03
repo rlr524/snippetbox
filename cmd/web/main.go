@@ -82,7 +82,7 @@ func main() {
 
 	// Write messages using the infoLog and errorLog loggers, instead of the standard logger
 	infoLog.Printf("Starting server on port %v", *addr)
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./security/cert.pem", "./security/key.pem")
 	errorLog.Fatal(err)
 }
 

@@ -15,6 +15,7 @@ func (app *Application) addDefaultData(td *templateData, r *http.Request) *templ
 		td = &templateData{}
 	}
 	td.CurrentYear = time.Now().Year()
+	td.Toast = app.session.PopString(r, "toast")
 	return td
 }
 

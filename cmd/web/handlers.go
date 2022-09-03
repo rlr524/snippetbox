@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"github.com/rlr524/snippetbox/pkg/forms"
 	"github.com/rlr524/snippetbox/pkg/models"
 	"net/http"
@@ -24,7 +25,7 @@ func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id < 1 {
 		app.notFound(w) // Use the notFound helper
 		return
@@ -86,6 +87,11 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+
+	// Use the Put() method to add a string value and the corresponding key to the session data.
+	// Note that if there is no existing session for the current user (or their session has expired) then a
+	// new empty session for them will be automatically created by the session middleware.
+	app.session.Put(r, "toast", "Snippet successfully created!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 

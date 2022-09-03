@@ -14,6 +14,7 @@ import (
 // model name, Snippet, not the alias it's assigned in the Application struct, which is SnippetsModel.
 type templateData struct {
 	CurrentYear int
+	Toast       string
 	Form        *forms.Form
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
