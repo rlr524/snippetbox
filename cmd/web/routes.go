@@ -18,6 +18,13 @@ func (app *Application) routes() http.Handler {
 		r.Post("/create", app.createSnippet)
 		r.Get("/{id:[0-9]+}", app.showSnippet)
 	})
+	r.Route("/user", func(r chi.Router) {
+		r.Get("/signup", app.userSignup)
+		r.Post("/signup", app.userSignupPost)
+		r.Get("/login", app.userLogin)
+		r.Post("/login", app.userLoginPost)
+		r.Post("/logout", app.userLogoutPost)
+	})
 
 	// Create a file server which serves files out of the "./ui/static" directory. Note that
 	// the path given to the http.Dir function is relative to the project directory root.
