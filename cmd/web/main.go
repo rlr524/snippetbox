@@ -22,6 +22,7 @@ type Application struct {
 	infoLog       *log.Logger
 	session       *sessions.Session
 	snippets      *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
+	users         *mysql.UserModel    //UserModel points to the UserModel struct that wraps the DB connection pool
 	templateCache map[string]*template.Template
 }
 
@@ -72,6 +73,7 @@ func main() {
 		infoLog:       infoLog,
 		session:       session,
 		snippets:      &mysql.SnippetModel{DB: db},
+		users:         &mysql.UserModel{DB: db},
 		templateCache: templateCache,
 	}
 
