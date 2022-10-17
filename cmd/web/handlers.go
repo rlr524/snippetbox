@@ -99,22 +99,46 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "public")
 }
 
-func (app *Application) userSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display an HTML form for signing up a new user...")
+func (app *Application) signupUserForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "signup.page.gohtml", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
-func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Create a new user...")
+func (app *Application) signupUser(w http.ResponseWriter, r *http.Request) {
+	// Parse the form data
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validate the form contents using the form helper
+	form := forms.New(r.PostForm)
+	form.Required("name", "email", "password")
+	form.MaxLength("name", 255)
+	form.MaxLength("email", 255)
+	form.MatchesPattern("email", forms.EmailRX)
+	form.MinLength("password", 10)
+
+	// If there are any errors, redisplay the signup form
+	if !form.Valid() {
+		app.render(w, r, "signup.page.gohtml", &templateData{Form: form})
+		return
+	}
+
+	// Otherwise send a response
+	fmt.Println(w, "Create a new user")
 }
 
-func (app *Application) userLogin(w http.ResponseWriter, r *http.Request) {
+func (app *Application) loginUserForm(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Display an HTML form for logging in a user...")
 }
 
-func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
+func (app *Application) loginUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Authenticate and login the user...")
 }
 
-func (app *Application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+func (app *Application) logoutUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Logout the user...")
 }

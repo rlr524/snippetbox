@@ -18,4 +18,5 @@ type User struct {
 	Email          string
 	HashedPassword []byte
 	Created        time.Time
+	Active         bool
 }

@@ -19,11 +19,11 @@ func (app *Application) routes() http.Handler {
 		r.Get("/{id:[0-9]+}", app.showSnippet)
 	})
 	r.Route("/user", func(r chi.Router) {
-		r.Get("/signup", app.userSignup)
-		r.Post("/signup", app.userSignupPost)
-		r.Get("/login", app.userLogin)
-		r.Post("/login", app.userLoginPost)
-		r.Post("/logout", app.userLogoutPost)
+		r.Get("/signup", app.signupUserForm)
+		r.Post("/signup", app.signupUser)
+		r.Get("/login", app.loginUserForm)
+		r.Post("/login", app.loginUser)
+		r.Post("/logout", app.logoutUser)
 	})
 
 	// Create a file server which serves files out of the "./ui/static" directory. Note that

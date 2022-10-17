@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"github.com/rlr524/snippetbox/pkg/models"
 )
 
 type UserModel struct {
@@ -18,4 +19,8 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 
 func (m *UserModel) Exists(id int) (bool, error) {
 	return false, nil
+}
+
+func (m *UserModel) Get(id int) (*models.User, error) {
+	return nil, nil
 }
