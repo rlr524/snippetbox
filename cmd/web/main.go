@@ -21,7 +21,7 @@ type Application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	session       *sessions.Session
-	snippets      *mysql.SnippetModel //SnippetsModel points to the SnippetModel struct that wraps the DB connection pool
+	snippets      *mysql.SnippetModel //Points to the SnippetModel struct that wraps the DB connection pool
 	users         *mysql.UserModel    //UserModel points to the UserModel struct that wraps the DB connection pool
 	templateCache map[string]*template.Template
 }

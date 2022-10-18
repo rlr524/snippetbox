@@ -127,8 +127,25 @@ func (app *Application) signupUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Otherwise send a response
-	fmt.Println(w, "Create a new user")
+	// Try to create a new user record in the db. If the email already exists, add an error
+	// message to the form and redisplay it.
+	err = app.users.Insert(form.Get("name"), form.Get("email"), form.Get("password"))
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.FormErrors.Add("email", "Email address is already in use")
+			app.render(w, r, "signup.page.gohtml", &templateData{Form: form})
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Otherwise add a confirmation toast message to the session confirming that the signup worked
+	// and asking the user to now log in.
+	app.session.Put(r, "flash", "Your signup was successful, please log in.")
+
+	// And redirect to the login page.
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
 func (app *Application) loginUserForm(w http.ResponseWriter, r *http.Request) {
