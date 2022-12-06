@@ -13,6 +13,35 @@ type UserModel struct {
 	DB *sql.DB
 }
 
+func (m *UserModel) Authenticate(email, password string) (int, error) {
+	// Retrieve the id and hashed password of the user. If no matching email exists, or the user is not
+	// active, return the ErrInvalidCredentials error.
+	var id int
+	var hashedPassword []byte
+	stmt := "SELECT id, hashed_password FROM users WHERE email = ? AND active = TRUE"
+	row := m.DB.QueryRow(stmt, email)
+	err := row.Scan(&id, &hashedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	// Check whether the hashed password and plain-text password provided match. If they don't,
+	// return the ErrInvalidCredentials error.
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+	return id, nil
+}
+
 // TODO: Does it make more sense to check the user email using a simple lookup with a UserModel.EmailTaken() function
 // and not worry about a race condition, the likelihood of which is near zero? In this case, we're relying on
 // MySQL to not change error codes or messages in future versions if we upgrade or on updating this function. Neither
@@ -43,10 +72,6 @@ func (m *UserModel) Insert(name, email, password string) error {
 		return err
 	}
 	return nil
-}
-
-func (m *UserModel) Authenticate(email, password string) (int, error) {
-	return 0, nil
 }
 
 func (m *UserModel) Exists(id int) (bool, error) {
