@@ -38,7 +38,7 @@ func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	// Command line flag for the MySQL DSN currently located on local Docker container
 	// TODO: Encrypt the password
-	dsn := flag.String("dsn", fmt.Sprintf("web:%s@tcp(127.0.0.1:3306)/snippetbox?parseTime=true", dbPass),
+	dsn := flag.String("dsn", fmt.Sprintf("snippetbox_service:%s@tcp(lancer:3306)/snippetbox?parseTime=true", dbPass),
 		"MySQL data source name")
 	secret := flag.String("secret", sessionSecret, "Secret key")
 	flag.Parse()
