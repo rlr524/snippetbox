@@ -13,11 +13,12 @@ import (
 // via the Applications struct defined in main.go. Because of this, the model is referenced using the actual
 // model name, Snippet, not the alias it's assigned in the Application struct, which is SnippetsModel.
 type templateData struct {
-	CurrentYear int
-	Toast       string
-	Form        *forms.Form
-	Snippet     *models.Snippet
-	Snippets    []*models.Snippet
+	CurrentYear     int
+	Toast           string
+	Form            *forms.Form
+	IsAuthenticated bool
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
 }
 
 // The humanDate function converts ISO 8601 time format to a more human-readable form. See the documentation

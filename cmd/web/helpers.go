@@ -16,6 +16,7 @@ func (app *Application) addDefaultData(td *templateData, r *http.Request) *templ
 	}
 	td.CurrentYear = time.Now().Year()
 	td.Toast = app.session.PopString(r, "toast")
+	td.IsAuthenticated = app.isAuthenticated(r)
 	return td
 }
 
@@ -61,4 +62,9 @@ func (app *Application) clientError(w http.ResponseWriter, status int) {
 // sends a 404 Not Found response to the user.
 func (app *Application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
+}
+
+// Return true if the current request is from an authenticated user, otherwise return false.
+func (app *Application) isAuthenticated(r *http.Request) bool {
+	return app.session.Exists(r, "authenticatedUserID")
 }

@@ -33,14 +33,14 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	dbPass := os.Getenv("DB_PASS")
-	// sessionSecret := os.Getenv("SESSION_SECRET")
+	sessionSecret := os.Getenv("SESSION_SECRET")
 	// Command line flag for the port
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	// Command line flag for the MySQL DSN currently located on local Docker container
 	// TODO: Encrypt the password
 	dsn := flag.String("dsn", fmt.Sprintf("web:%s@tcp(lancer:3306)/snippetbox?parseTime=true", dbPass),
 		"MySQL data source name")
-	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
+	secret := flag.String("secret", sessionSecret, "Secret key")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO:\t", log.Ldate|log.Ltime)
