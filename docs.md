@@ -72,4 +72,8 @@ the server uses the same network address as in the Config struct and the routes
 | POST   | /snippet/create | createSnippet     | Create a new snippet         |
 | GET    | /static/        | http.Fileserver   | Serve a specific static fil  |
 
-
+## Middleware TODO
+> Need to break the middleware into dynamic and standard types. The dynamic will be
+> app.session.Enable and app.requireAuthentication and all others will be standard.
+> The standard applies to all routes and dynamic will will apply to the /, 
+> /snippet/create, /snippet/:id, /user/signup, and /user/login routes.

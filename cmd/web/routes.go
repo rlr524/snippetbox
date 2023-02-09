@@ -6,10 +6,11 @@ import (
 	"net/http"
 )
 
+// TODO: See docs.md middleware section for a detailed explanation of this todo
 func (app *Application) routes() http.Handler {
 	// Use the alice package for middleware chain with the standard middleware used for every request
+	// middleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders, app.session.Enable, app.requireAuthentication)
 	middleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders, app.session.Enable)
-
 	r := chi.NewRouter()
 
 	r.Get("/", app.home)
